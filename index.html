@@ -38,10 +38,7 @@
       color: white;
       font-weight: bold;
       cursor: pointer;
-      transition: 0.2s;
     }
-
-    button:hover { transform: scale(1.05); }
 
     #puzzle {
       width: 90vw;
@@ -52,23 +49,41 @@
       grid-template-columns: repeat(5, 1fr);
       grid-template-rows: repeat(4, 1fr);
       gap: 3px;
-      border-radius: 12px;
-      overflow: hidden;
     }
 
     .tile {
-      background-image: url('puzzle.png');
-      background-size: 100% 100%;
-      cursor: grab;
       border-radius: 6px;
+      cursor: grab;
+      background-size: cover;
     }
 
     .dragging { opacity: 0.5; }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      color: black;
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .modal button { margin: 10px; }
   </style>
 </head>
 <body>
 
-<h1>🧩 Pro Puzzle Game</h1>
+<h1>🧩 Puzzle Game</h1>
 
 <div class="controls">
   <div class="card">⏱ Time: <span id="time">0</span>s</div>
@@ -78,6 +93,15 @@
 
 <div id="puzzle"></div>
 
+<!-- Modal -->
+<div id="proposal" class="modal">
+  <div class="modal-content">
+    <h2>💍 Will you marry me?</h2>
+    <button onclick="alert('❤️ She said YES!')">Yes</button>
+    <button onclick="alert('😅 Try again!')">No</button>
+  </div>
+</div>
+
 <script>
   const puzzle = document.getElementById("puzzle");
   const cols = 5, rows = 4;
@@ -86,6 +110,9 @@
   let moves = 0;
   let time = 0;
   let timer;
+
+  const img = new Image();
+  img.src = "puzzle.png";
 
   function startTimer() {
     clearInterval(timer);
@@ -100,36 +127,53 @@
     tiles = [];
     puzzle.innerHTML = "";
 
-    for (let i = 0; i < cols * rows; i++) {
-      const tile = document.createElement("div");
-      tile.classList.add("tile");
-      tile.setAttribute("draggable", true);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
-      const x = i % cols;
-      const y = Math.floor(i / cols);
+    const pieceWidth = img.width / cols;
+    const pieceHeight = img.height / rows;
 
-      tile.style.backgroundPosition = `${(x/(cols-1))*100}% ${(y/(rows-1))*100}%`;
-      tile.dataset.index = i;
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
 
-      tile.addEventListener("dragstart", () => {
-        draggedIndex = tiles.indexOf(tile);
-        tile.classList.add("dragging");
-      });
+        canvas.width = pieceWidth;
+        canvas.height = pieceHeight;
 
-      tile.addEventListener("dragend", () => tile.classList.remove("dragging"));
+        ctx.drawImage(
+          img,
+          x * pieceWidth,
+          y * pieceHeight,
+          pieceWidth,
+          pieceHeight,
+          0,
+          0,
+          pieceWidth,
+          pieceHeight
+        );
 
-      tile.addEventListener("dragover", e => e.preventDefault());
+        const tile = document.createElement("div");
+        tile.classList.add("tile");
+        tile.style.backgroundImage = `url(${canvas.toDataURL()})`;
+        tile.setAttribute("draggable", true);
 
-      tile.addEventListener("drop", () => {
-        const dropIndex = tiles.indexOf(tile);
-        swap(draggedIndex, dropIndex);
-      });
+        const index = y * cols + x;
+        tile.dataset.index = index;
 
-      // Mobile touch support
-      tile.addEventListener("touchstart", () => draggedIndex = tiles.indexOf(tile));
-      tile.addEventListener("touchend", () => {});
+        tile.addEventListener("dragstart", () => {
+          draggedIndex = tiles.indexOf(tile);
+          tile.classList.add("dragging");
+        });
 
-      tiles.push(tile);
+        tile.addEventListener("dragend", () => tile.classList.remove("dragging"));
+        tile.addEventListener("dragover", e => e.preventDefault());
+
+        tile.addEventListener("drop", () => {
+          const dropIndex = tiles.indexOf(tile);
+          swap(draggedIndex, dropIndex);
+        });
+
+        tiles.push(tile);
+      }
     }
 
     shuffle();
@@ -166,11 +210,13 @@
     let correct = tiles.every((tile, i) => tile.dataset.index == i);
     if (correct) {
       clearInterval(timer);
-      setTimeout(() => alert(`🎉 Completed in ${moves} moves & ${time}s!`), 100);
+      setTimeout(() => {
+        document.getElementById("proposal").style.display = "flex";
+      }, 500);
     }
   }
 
-  createTiles();
+  img.onload = () => createTiles();
 </script>
 
 </body>
