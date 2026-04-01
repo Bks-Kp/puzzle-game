@@ -13,6 +13,7 @@
       color: white;
       text-align: center;
     }
+
     h1 { margin: 20px 0 5px; }
 
     .controls {
@@ -42,24 +43,23 @@
 
     #puzzle {
       width: 90vw;
-      max-width: 500px;
+      max-width: 400px;
       aspect-ratio: 4/5;
       margin: 20px auto;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       grid-template-rows: repeat(5, 1fr);
-      gap: 3px;
+      gap: 2px;
     }
 
     .tile {
       border-radius: 6px;
       cursor: grab;
-      background-size: cover;
+      background-repeat: no-repeat;
     }
 
     .dragging { opacity: 0.5; }
 
-    /* Modal */
     .modal {
       position: fixed;
       top: 0; left: 0;
@@ -93,7 +93,6 @@
 
 <div id="puzzle"></div>
 
-<!-- Modal -->
 <div id="proposal" class="modal">
   <div class="modal-content">
     <h2>💍 Will you marry me?</h2>
@@ -127,14 +126,14 @@
     tiles = [];
     puzzle.innerHTML = "";
 
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-
     const pieceWidth = img.width / cols;
     const pieceHeight = img.height / rows;
 
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
+
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
 
         canvas.width = pieceWidth;
         canvas.height = pieceHeight;
@@ -154,6 +153,7 @@
         const tile = document.createElement("div");
         tile.classList.add("tile");
         tile.style.backgroundImage = `url(${canvas.toDataURL()})`;
+        tile.style.backgroundSize = "100% 100%";
         tile.setAttribute("draggable", true);
 
         const index = y * cols + x;
@@ -212,7 +212,7 @@
       clearInterval(timer);
       setTimeout(() => {
         document.getElementById("proposal").style.display = "flex";
-      }, 500);
+      }, 300);
     }
   }
 
