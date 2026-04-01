@@ -2,123 +2,176 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>5x4 Puzzle Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pro Puzzle Game</title>
   <style>
+    * { box-sizing: border-box; }
     body {
-      font-family: Arial, sans-serif;
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
       text-align: center;
-      background: #f4f4f4;
     }
-    h1 { margin-top: 20px; }
+    h1 { margin: 20px 0 5px; }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.1);
+      padding: 10px 15px;
+      border-radius: 12px;
+      min-width: 100px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      background: #ff7a18;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover { transform: scale(1.05); }
+
     #puzzle {
-      width: 400px;
-      height: 500px;
+      width: 90vw;
+      max-width: 500px;
+      aspect-ratio: 5/4;
       margin: 20px auto;
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       grid-template-rows: repeat(4, 1fr);
-      gap: 2px;
+      gap: 3px;
+      border-radius: 12px;
+      overflow: hidden;
     }
+
     .tile {
-      width: 100%;
-      height: 100%;
       background-image: url('puzzle.png');
-      background-size: 500px 400px;
+      background-size: 100% 100%;
       cursor: grab;
+      border-radius: 6px;
     }
-    .dragging {
-      opacity: 0.5;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
+
+    .dragging { opacity: 0.5; }
   </style>
 </head>
 <body>
-  <h1>🧩 5x4 Puzzle Game</h1>
+
+<h1>🧩 Pro Puzzle Game</h1>
+
+<div class="controls">
+  <div class="card">⏱ Time: <span id="time">0</span>s</div>
+  <div class="card">🎯 Moves: <span id="moves">0</span></div>
   <button onclick="shuffle()">Shuffle</button>
-  <div id="puzzle"></div>
+</div>
 
-  <script>
-    const puzzle = document.getElementById("puzzle");
-    const cols = 5;
-    const rows = 4;
-    let tiles = [];
-    let draggedIndex = null;
+<div id="puzzle"></div>
 
-    function createTiles() {
-      puzzle.innerHTML = "";
-      tiles = [];
+<script>
+  const puzzle = document.getElementById("puzzle");
+  const cols = 5, rows = 4;
+  let tiles = [];
+  let draggedIndex = null;
+  let moves = 0;
+  let time = 0;
+  let timer;
 
-      for (let i = 0; i < cols * rows; i++) {
-        const tile = document.createElement("div");
-        tile.classList.add("tile");
-        tile.setAttribute("draggable", true);
+  function startTimer() {
+    clearInterval(timer);
+    time = 0;
+    timer = setInterval(() => {
+      time++;
+      document.getElementById("time").innerText = time;
+    }, 1000);
+  }
 
-        const x = i % cols;
-        const y = Math.floor(i / cols);
+  function createTiles() {
+    tiles = [];
+    puzzle.innerHTML = "";
 
-        tile.style.backgroundPosition = `-${x * 80}px -${y * 125}px`;
-        tile.dataset.index = i;
+    for (let i = 0; i < cols * rows; i++) {
+      const tile = document.createElement("div");
+      tile.classList.add("tile");
+      tile.setAttribute("draggable", true);
 
-        tile.addEventListener("dragstart", () => {
-          draggedIndex = tiles.indexOf(tile);
-          tile.classList.add("dragging");
-        });
+      const x = i % cols;
+      const y = Math.floor(i / cols);
 
-        tile.addEventListener("dragend", () => {
-          tile.classList.remove("dragging");
-        });
+      tile.style.backgroundPosition = `${(x/(cols-1))*100}% ${(y/(rows-1))*100}%`;
+      tile.dataset.index = i;
 
-        tile.addEventListener("dragover", (e) => e.preventDefault());
-
-        tile.addEventListener("drop", () => {
-          const dropIndex = tiles.indexOf(tile);
-          swap(draggedIndex, dropIndex);
-        });
-
-        tiles.push(tile);
-      }
-
-      shuffle();
-      render();
-    }
-
-    function shuffle() {
-      for (let i = tiles.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
-      }
-      render();
-    }
-
-    function swap(i, j) {
-      [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
-      render();
-      checkWin();
-    }
-
-    function render() {
-      puzzle.innerHTML = "";
-      tiles.forEach(t => puzzle.appendChild(t));
-    }
-
-    function checkWin() {
-      let correct = true;
-      tiles.forEach((tile, index) => {
-        if (parseInt(tile.dataset.index) !== index) {
-          correct = false;
-        }
+      tile.addEventListener("dragstart", () => {
+        draggedIndex = tiles.indexOf(tile);
+        tile.classList.add("dragging");
       });
 
-      if (correct) {
-        setTimeout(() => alert("🎉 Puzzle Completed!"), 100);
-      }
+      tile.addEventListener("dragend", () => tile.classList.remove("dragging"));
+
+      tile.addEventListener("dragover", e => e.preventDefault());
+
+      tile.addEventListener("drop", () => {
+        const dropIndex = tiles.indexOf(tile);
+        swap(draggedIndex, dropIndex);
+      });
+
+      // Mobile touch support
+      tile.addEventListener("touchstart", () => draggedIndex = tiles.indexOf(tile));
+      tile.addEventListener("touchend", () => {});
+
+      tiles.push(tile);
     }
 
-    createTiles();
-  </script>
+    shuffle();
+    render();
+    startTimer();
+  }
+
+  function shuffle() {
+    for (let i = tiles.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+    }
+    moves = 0;
+    document.getElementById("moves").innerText = moves;
+    render();
+    startTimer();
+  }
+
+  function swap(i, j) {
+    if (i === null || j === null) return;
+    [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+    moves++;
+    document.getElementById("moves").innerText = moves;
+    render();
+    checkWin();
+  }
+
+  function render() {
+    puzzle.innerHTML = "";
+    tiles.forEach(t => puzzle.appendChild(t));
+  }
+
+  function checkWin() {
+    let correct = tiles.every((tile, i) => tile.dataset.index == i);
+    if (correct) {
+      clearInterval(timer);
+      setTimeout(() => alert(`🎉 Completed in ${moves} moves & ${time}s!`), 100);
+    }
+  }
+
+  createTiles();
+</script>
+
 </body>
 </html>
