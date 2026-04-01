@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pro Puzzle Game</title>
+  <title>Crazy Proposal Puzzle</title>
   <style>
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      background: linear-gradient(135deg, #ff6a88, #ff99ac);
       color: white;
       text-align: center;
+      overflow-x: hidden;
     }
 
     h1 { margin: 20px 0 5px; }
@@ -25,7 +26,7 @@
     }
 
     .card {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.2);
       padding: 10px 15px;
       border-radius: 12px;
       min-width: 100px;
@@ -35,7 +36,7 @@
       padding: 10px 20px;
       border: none;
       border-radius: 10px;
-      background: #ff7a18;
+      background: #ff3d6d;
       color: white;
       font-weight: bold;
       cursor: pointer;
@@ -56,15 +57,14 @@
       border-radius: 6px;
       cursor: grab;
       background-repeat: no-repeat;
+      background-size: 100% 100%;
     }
-
-    .dragging { opacity: 0.5; }
 
     .modal {
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(0,0,0,0.7);
+      background: rgba(0,0,0,0.8);
       display: none;
       justify-content: center;
       align-items: center;
@@ -74,16 +74,25 @@
       background: white;
       color: black;
       padding: 30px;
-      border-radius: 12px;
+      border-radius: 15px;
       text-align: center;
+      position: relative;
     }
 
-    .modal button { margin: 10px; }
+    #noBtn {
+      position: absolute;
+    }
+
+    .love-text {
+      font-size: 20px;
+      margin-top: 20px;
+      color: #ff3d6d;
+    }
   </style>
 </head>
 <body>
 
-<h1>🧩 Puzzle Game</h1>
+<h1>🧩 Solve My Heart Puzzle</h1>
 
 <div class="controls">
   <div class="card">⏱ Time: <span id="time">0</span>s</div>
@@ -94,10 +103,11 @@
 <div id="puzzle"></div>
 
 <div id="proposal" class="modal">
-  <div class="modal-content">
+  <div class="modal-content" id="modalBox">
     <h2>💍 Will you marry me?</h2>
-    <button onclick="alert('❤️ She said YES!')">Yes</button>
-    <button onclick="alert('😅 Try again!')">No</button>
+    <button onclick="yesClicked()">Yes ❤️</button>
+    <button id="noBtn">No 😅</button>
+    <div id="loveMsg" class="love-text"></div>
   </div>
 </div>
 
@@ -131,29 +141,17 @@
 
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
-
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
 
         canvas.width = pieceWidth;
         canvas.height = pieceHeight;
 
-        ctx.drawImage(
-          img,
-          x * pieceWidth,
-          y * pieceHeight,
-          pieceWidth,
-          pieceHeight,
-          0,
-          0,
-          pieceWidth,
-          pieceHeight
-        );
+        ctx.drawImage(img, x * pieceWidth, y * pieceHeight, pieceWidth, pieceHeight, 0, 0, pieceWidth, pieceHeight);
 
         const tile = document.createElement("div");
         tile.classList.add("tile");
         tile.style.backgroundImage = `url(${canvas.toDataURL()})`;
-        tile.style.backgroundSize = "100% 100%";
         tile.setAttribute("draggable", true);
 
         const index = y * cols + x;
@@ -161,10 +159,8 @@
 
         tile.addEventListener("dragstart", () => {
           draggedIndex = tiles.indexOf(tile);
-          tile.classList.add("dragging");
         });
 
-        tile.addEventListener("dragend", () => tile.classList.remove("dragging"));
         tile.addEventListener("dragover", e => e.preventDefault());
 
         tile.addEventListener("drop", () => {
@@ -212,8 +208,26 @@
       clearInterval(timer);
       setTimeout(() => {
         document.getElementById("proposal").style.display = "flex";
+        moveNoButton();
       }, 300);
     }
+  }
+
+  function moveNoButton() {
+    const noBtn = document.getElementById("noBtn");
+    const box = document.getElementById("modalBox");
+
+    setInterval(() => {
+      const x = Math.random() * (box.offsetWidth - 80);
+      const y = Math.random() * (box.offsetHeight - 40);
+      noBtn.style.left = x + 'px';
+      noBtn.style.top = y + 'px';
+    }, 500);
+  }
+
+  function yesClicked() {
+    document.getElementById("loveMsg").innerText =
+      "Heyy, Hendtieee, I Know you will say yes 🤣🤣 as you did't had other option but one thing to admit that you are the most beautiful part of my life, every moment with you feels magical and complete... Love u kalpuuu ❤️";
   }
 
   img.onload = () => createTiles();
