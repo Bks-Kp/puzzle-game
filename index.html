@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>4x4 Puzzle Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f4f4f4;
+    }
+    h1 { margin-top: 20px; }
+    #puzzle {
+      width: 400px;
+      height: 400px;
+      margin: 20px auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 2px;
+    }
+    .tile {
+      width: 100%;
+      height: 100%;
+      background-image: url('puzzle.png');
+      background-size: 400px 400px;
+      cursor: pointer;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧩 4x4 Puzzle Game</h1>
+  <button onclick="shuffle()">Shuffle</button>
+  <div id="puzzle"></div>
+
+  <script>
+    const puzzle = document.getElementById("puzzle");
+    const size = 4;
+    let tiles = [];
+
+    function createTiles() {
+      puzzle.innerHTML = "";
+      tiles = [];
+      for (let i = 0; i < size * size; i++) {
+        const tile = document.createElement("div");
+        tile.classList.add("tile");
+        const x = i % size;
+        const y = Math.floor(i / size);
+        tile.style.backgroundPosition = `-${x * 100}px -${y * 100}px`;
+        tile.dataset.index = i;
+        tile.addEventListener("click", () => swap(i));
+        tiles.push(tile);
+      }
+      tiles.forEach(t => puzzle.appendChild(t));
+    }
+
+    function shuffle() {
+      for (let i = tiles.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+      }
+      render();
+    }
+
+    function swap(index) {
+      if (index < tiles.length - 1) {
+        [tiles[index], tiles[index + 1]] = [tiles[index + 1], tiles[index]];
+        render();
+      }
+    }
+
+    function render() {
+      puzzle.innerHTML = "";
+      tiles.forEach(t => puzzle.appendChild(t));
+    }
+
+    createTiles();
+  </script>
+</body>
+</html>
